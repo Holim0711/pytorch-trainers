@@ -11,11 +11,11 @@ def _check_params(func, params):
 
 def _prepare_batch(batch, device):
     x, y = batch
-    if isinstance(x, torch.tensor):
+    if isinstance(x, torch.Tensor):
         x = x.to(device)
     else:
         x = [t.to(device) for t in x]
-    if isinstance(y, torch.tensor):
+    if isinstance(y, torch.Tensor):
         y = y.to(device)
     else:
         y = [t.to(device) for t in y]
