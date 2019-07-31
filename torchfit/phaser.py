@@ -1,5 +1,5 @@
 import torch
-from inspect import getargspect
+from inspect import getargspec
 
 
 def _check_params(func, params):
