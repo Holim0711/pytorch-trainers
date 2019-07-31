@@ -63,10 +63,6 @@ class Phaser():
         if self._after_valid_epoch_func:
             self._after_valid_epoch_func(loss=loss_sum/len(dataloader))
 
-    def run(self, train_dataloader, valid_dataloader):
-        self.train(train_dataloader)
-        self.valid(valid_dataloader)
-
     def after_train_batch(self, func):
         _check_params(func, ['pred', 'true'])
         self._after_train_batch_func = func
