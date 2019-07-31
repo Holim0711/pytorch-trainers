@@ -11,11 +11,11 @@ def _check_params(func, params):
 
 class Phaser():
 
-    def __init__(self, model, criterion, optimizer, device='cpu'):
+    def __init__(self, model, criterion, optimizer, device=None):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
-        self.device = torch.device(device)
+        self.device = device
 
         self._after_train_batch_func = None
         self._after_train_epoch_func = None
