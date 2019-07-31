@@ -40,7 +40,7 @@ class Phaser():
         loss_sum = 0
 
         for batch in dataloader:
-            x, y = _prepare_batch(batch, device)
+            x, y = _prepare_batch(batch, self.device)
 
             ŷ = self.model(x)
             loss = self.criterion(ŷ, y)
@@ -62,7 +62,7 @@ class Phaser():
         loss_sum = 0
 
         for batch in dataloader:
-            x, y = _prepare_batch(batch, device)
+            x, y = _prepare_batch(batch, self.device)
 
             ŷ = self.model(x)
             loss = self.criterion(ŷ, y)
