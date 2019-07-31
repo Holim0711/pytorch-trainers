@@ -22,13 +22,24 @@ class Phaser():
         self._after_valid_batch_func = None
         self._after_valid_epoch_func = None
 
+    def _prepare_batch(batch):
+        x, y = batch
+        if isinstance(x, torch.tensor):
+            x = x.to(self.device)
+        else:
+            x = [t.to(self.device) for t in x]
+        if isinstance(y, torch.tensor):
+            y = y.to(self.device)
+        else:
+            y = [t.to(self.device) for t in y]
+        return x, y
+
     def train(self, dataloader):
         self.model.train()
         loss_sum = 0
 
-        for x, y in dataloader:
-            x = x.to(self.device)
-            y = y.to(self.device)
+        for batch in dataloader:
+            x, y = _prepare_batch(batch)
 
             ŷ = self.model(x)
             loss = self.criterion(ŷ, y)
@@ -49,9 +60,8 @@ class Phaser():
         self.model.eval()
         loss_sum = 0
 
-        for x, y in dataloader:
-            x = x.to(self.device)
-            y = y.to(self.device)
+        for batch in dataloader:
+            x, y = _prepare_batch(batch)
 
             ŷ = self.model(x)
             loss = self.criterion(ŷ, y)
