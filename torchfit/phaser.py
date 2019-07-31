@@ -1,11 +1,11 @@
 import torch
-import inpsect
+from inspect import getargspect
 
 
 def _check_params(func, params):
-    args = inspect.getargspec(func).args
+    argspec = getargspec(func)
     for x in params:
-        if x not in args:
+        if x not in argspec.args:
             raise Exception(f"There's no {x} in this function.")
 
 
