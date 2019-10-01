@@ -34,10 +34,8 @@ class Phaser():
         self._after_train_epoch_func = None
         self._after_valid_batch_func = None
         self._after_valid_epoch_func = None
-        self.epoch = 0
 
     def train(self, dataloader):
-        self.epoch += 1
         self.model.train()
         loss_sum = 0
 
