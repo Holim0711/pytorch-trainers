@@ -1,95 +1,60 @@
 import torch
-from inspect import getargspec
-
-
-def _check_params(func, params):
-    argspec = getargspec(func)
-    for x in params:
-        if x not in argspec.args:
-            raise Exception(f"There's no {x} in this function.")
-
-
-def _prepare_batch(batch, device):
-    x, y = batch
-    if isinstance(x, torch.Tensor):
-        x = x.to(device)
-    else:
-        x = [t.to(device) for t in x]
-    if isinstance(y, torch.Tensor):
-        y = y.to(device)
-    else:
-        y = [t.to(device) for t in y]
-    return x, y
+from .utils import *
 
 
 class Phaser():
 
     def __init__(self, model, criterion, optimizer, device=None):
+        if device is not None:
+            model.to(device)
+            criterion.to(device)
+            optimizer.load_state_dict(optimizer.state_dict())
+
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
         self.device = device
 
-        self._after_train_batch_func = None
-        self._after_train_epoch_func = None
-        self._after_valid_batch_func = None
-        self._after_valid_epoch_func = None
+        self.callbacks = {
+            'train': None,
+            'valid': None,
+        }
 
     def train(self, dataloader):
         self.model.train()
-        loss_sum = 0
 
-        for batch in dataloader:
-            x, y = _prepare_batch(batch, self.device)
+        for x, y in dataloader:
+            x = _convert_data(x, self.device)
+            y = _convert_data(y, self.device)
 
             ŷ = self.model(x)
-            loss = self.criterion(ŷ, y)
-            loss_sum += loss.item()
+            l = self.criterion(ŷ, y)
 
             self.optimizer.zero_grad()
-            loss.backward()
+            l.backward()
             self.optimizer.step()
 
-            if self._after_train_batch_func:
-                self._after_train_batch_func(pred=ŷ, true=y)
-
-        if self._after_train_epoch_func:
-            self._after_train_epoch_func(loss=loss_sum/len(dataloader))
+            if self.callbacks['train'] is not None:
+                self.callbacks['train'](pred=ŷ, true=y, loss=l)
 
     @torch.no_grad()
     def valid(self, dataloader):
         self.model.eval()
-        loss_sum = 0
 
-        for batch in dataloader:
-            x, y = _prepare_batch(batch, self.device)
+        for x, y in dataloader:
+            x = _convert_data(x, self.device)
+            y = _convert_data(y, self.device)
 
             ŷ = self.model(x)
-            loss = self.criterion(ŷ, y)
-            loss_sum += loss.item()
+            l = self.criterion(ŷ, y)
 
-            if self._after_valid_batch_func:
-                self._after_valid_batch_func(pred=ŷ, true=y)
+            if self.callbacks['valid'] is not None:
+                self.callbacks['valid'](pred=ŷ, true=y, loss=l)
 
-        if self._after_valid_epoch_func:
-            self._after_valid_epoch_func(loss=loss_sum/len(dataloader))
-
-    def after_train_batch(self, func):
-        _check_params(func, ['pred', 'true'])
-        self._after_train_batch_func = func
-        return func
-
-    def after_train_epoch(self, func):
-        _check_params(func, ['loss'])
-        self._after_train_epoch_func = func
-        return func
-
-    def after_valid_batch(self, func):
-        _check_params(func, ['pred', 'true'])
-        self._after_valid_batch_func = func
-        return func
-
-    def after_valid_epoch(self, func):
-        _check_params(func, ['loss'])
-        self._after_valid_epoch_func = func
-        return func
+    def after(self, phase):
+        if phase not in self.callbacks:
+            raise ValueError(f'phase should be in {set(self.callbacks)}.')
+        def register(func):
+            _check_named_params(func, ['pred', 'true', 'loss'])
+            self.callbacks[phase] = func
+        return register
