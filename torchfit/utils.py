@@ -18,7 +18,7 @@ def _convert_data(x, device):
     elif isinstance(x, set):
         return set(_convert_data(v, device) for v in x)
     elif isinstance(x, dict):
-        return {k: _convert_data(v) for k, v in x.items()}
+        return {k: _convert_data(v, device) for k, v in x.items()}
     return x
 
 
