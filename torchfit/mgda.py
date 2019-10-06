@@ -47,10 +47,10 @@ class PhaserMGDA():
             ŷ = self.model_t(ź)
             l = self.criterion(ŷ, y)
 
-            Δź = [None] * len(l)
-            for t, l_t in enumerate(l):
+            Δź = []
+            for l_t in l:
                 l_t.backward()
-                Δź[t] = ź.grad.flatten()
+                Δź.append(ź.grad.flatten())
                 ź.grad = None
             Δź = torch.stack(Δź)
 
