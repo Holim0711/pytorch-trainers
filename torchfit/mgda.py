@@ -4,8 +4,7 @@ from .utils import _convert, mgda_frank_wolfe_solver
 
 class PhaserMGDA():
 
-    def __init__(self, model_s, model_t, criterion, optimizer, device=None,
-                 convert_x=None, convert_y=None):
+    def __init__(self, model_s, model_t, criterion, optimizer, device=None):
         if device is not None:
             model_s.to(device)
             model_t.to(device)
@@ -17,9 +16,6 @@ class PhaserMGDA():
         self.criterion = criterion
         self.optimizer = optimizer
         self.device = device
-
-        self.convert_x = convert_x if convert_x is not None else _convert
-        self.convert_y = convert_y if convert_y is not None else _convert
 
         self.callbacks = {
             'train': [],
@@ -38,8 +34,8 @@ class PhaserMGDA():
         self.model_t.train()
 
         for x, y in dataloader:
-            x = self.convert_x(x, device=self.device)
-            y = self.convert_y(y, device=self.device)
+            x = _convert(x, device=self.device)
+            y = _convert(y, device=self.device)
 
             z = self.model_s(x)
             ź = z.detach().requires_grad_()
@@ -59,9 +55,9 @@ class PhaserMGDA():
             ŷ = self.model_t(z)
             l = self.criterion(ŷ, y)
 
-            self.optimizer.zero_grad()
             torch.stack(l).dot(α).backward()
             self.optimizer.step()
+            self.optimizer.zero_grad()
 
             for func in self.callbacks['train']:
                 func(input=x, true=y, pred=ŷ, loss=l, scale=α)
@@ -72,8 +68,8 @@ class PhaserMGDA():
         self.model_t.eval()
 
         for x, y in dataloader:
-            x = self.convert_x(x, device=self.device)
-            y = self.convert_y(y, device=self.device)
+            x = _convert(x, device=self.device)
+            y = _convert(y, device=self.device)
 
             ŷ = self.model_t(self.model_s(x))
             l = self.criterion(ŷ, y)
