@@ -30,12 +30,6 @@ class Phaser():
             self.callbacks[phase].append(func)
         return register
 
-    def finalize(self)
-        self.optimizer.step()
-        self.optimizer.zero_grad()
-        for func in self.callbacks['train']:
-            func(input=x, true=y, pred=ŷ, loss=l)
-
     def train(self, dataloader):
         self.model.train()
 
@@ -55,13 +49,19 @@ class Phaser():
             l.backward()
 
             if (i + 1) % self.multi_batch == 0:
-                self.finalize()
+                self.optimizer.step()
+                self.optimizer.zero_grad()
+                for func in self.callbacks['train']:
+                    func(input=x, true=y, pred=ŷ, loss=l)
 
         if n_remain != 0:
             if dataloader.drop_last:
                 self.optimizer.zero_grad()
             else:
-                self.finalize()
+                self.optimizer.step()
+                self.optimizer.zero_grad()
+                for func in self.callbacks['train']:
+                    func(input=x, true=y, pred=ŷ, loss=l)
 
     @torch.no_grad()
     def valid(self, dataloader):
