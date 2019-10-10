@@ -20,7 +20,7 @@ class MultiBatchPhaser(BasePhaser):
         n_batch = len(dataloader)
         n_remain = n_batch % self.multi_batch
 
-        for i, (x, y) in enumerate(iterate(dataloader)):
+        for i, (x, y) in enumerate(iterate(dataloader, self.device)):
             ŷ = self.model(x)
             l = self.loss(ŷ, y)
 

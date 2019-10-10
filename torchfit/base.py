@@ -32,7 +32,7 @@ class BasePhaser():
 
     def train(self, dataloader):
         self.model.train()
-        for x, y in iterate(dataloader):
+        for x, y in iterate(dataloader, self.device):
             ŷ = self.model(x)
             l = self.loss(ŷ, y)
             l.backward()
@@ -44,7 +44,7 @@ class BasePhaser():
     @torch.no_grad()
     def valid(self, dataloader):
         self.model.eval()
-        for x, y in iterate(dataloader):
+        for x, y in iterate(dataloader, self.device):
             ŷ = self.model(x)
             l = self.loss(ŷ, y)
             self.callback['valid'](input=x, true=y, pred=ŷ, loss=l)

@@ -18,7 +18,7 @@ class MgdaUbPhaser(BasePhaser):
     def train(self, dataloader):
         self.model.train()
 
-        for x, y in iterate(dataloader):
+        for x, y in iterate(dataloader, self.device):
             z = self.model_enc(x)
             ź = z.detach().requires_grad_()
 

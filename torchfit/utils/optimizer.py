@@ -1,7 +1,7 @@
-import torch.optim.Optimizer as torch_optim
+from torch.optim import Optimizer as torch_optim
 
 
-class Optimizer(list)
+class Optimizer(list):
 
     def __init__(self, *args):
         if any(not isinstance(x, torch_optim) for x in args):
