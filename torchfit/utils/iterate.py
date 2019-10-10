@@ -1,5 +1,6 @@
 from torch import Tensor
 from collections.abc import Sequence, Mapping
+from tqdm import tqdm
 
 
 def convert(x, device):
@@ -14,6 +15,8 @@ def convert(x, device):
     return x
 
 
-def iterate(dataloader, device):
+def iterate(dataloader, device, verbose):
+    if verbose:
+        dataloader = tqdm(dataloader)
     for x in dataloader:
         yield convert(x, device)

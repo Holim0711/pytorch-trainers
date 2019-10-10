@@ -1,13 +1,24 @@
+import torch
 from model import *
 from metric import Metric
 from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
+from configparser import ConfigParser
 
-model = Model(**cfg['model'])
+cfg = ConfigParser()
+cfg.read('config.ini')
+cfg_model = dict((k, eval(v)) for k, v in cfg['Model'].items())
+cfg_loss = dict((k, eval(v)) for k, v in cfg['Loss'].items())
+cfg_optim = dict((k, eval(v)) for k, v in cfg['Optim'].items())
+cfg = dict((k, eval(v)) for k, v in cfg['Hyper'].items())
 
-loss = Loss(**cfg['loss'])
+torch.manual_seed(cfg['random_seed'])
 
-optim = Optim(model.parameters(), lr=cfg['learning_rate'], **cfg['optim'])
+model = Model(**cfg_model)
+
+loss = Loss(**cfg_loss)
+
+optim = Optim(model.parameters(), lr=cfg['learning_rate'], **cfg_optim)
 
 trainset = MNIST(".", train=True, transform=Transform(), download=True)
 validset = MNIST(".", train=False, transform=Transform(), download=False)
@@ -33,7 +44,6 @@ def after_valid(input, pred, true, loss):
     metric.update(pred, true)
 
 
-from tqdm import tqdm
 from statistics import mean
 from torch.utils.tensorboard import SummaryWriter
 
@@ -47,10 +57,10 @@ with SummaryWriter() as writer:
     writer.add_graph(model, next(iter(validloader))[0].to('cuda'))
 
     for epoch in range(20):
-        phaser.train(tqdm(trainloader))
+        phaser.train(trainloader)
         writer.add_scalar('loss/train', mean(train_loss), epoch)
 
-        phaser.valid(tqdm(validloader))
+        phaser.valid(validloader)
         writer.add_scalar('loss/valid', mean(valid_loss), epoch)
 
         acc, fig = metric.output()

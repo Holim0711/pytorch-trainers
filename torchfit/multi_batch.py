@@ -4,13 +4,13 @@ from .utils import iterate
 
 class MultiBatchPhaser(BasePhaser):
 
-    def __init__(self, model, loss, optim, device=None,
+    def __init__(self, model, loss, optim, device=None, verbose=True,
                  multi_batch=1, multi_batch_reduction='mean'):
 
         if multi_batch_reduction not in {'mean', 'sum'}:
             raise ValueError(f"invalid method: {multi_batch_reduction}")
 
-        super().__init__(model, loss, optim, device)
+        super().__init__(model, loss, optim, device, verbose)
         self.multi_batch = int(multi_batch)
         self.multi_batch_reduction = multi_batch_reduction
 
@@ -20,7 +20,7 @@ class MultiBatchPhaser(BasePhaser):
         n_batch = len(dataloader)
         n_remain = n_batch % self.multi_batch
 
-        for i, (x, y) in enumerate(iterate(dataloader, self.device)):
+        for i, (x, y) in enumerate(iterate(dataloader, self.device, self.verbose)):
             ŷ = self.model(x)
             l = self.loss(ŷ, y)
 

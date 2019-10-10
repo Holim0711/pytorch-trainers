@@ -6,22 +6,11 @@ from torchvision.transforms import Compose, ToTensor, Normalize
 
 
 __all__ = [
-    'cfg',
     'Transform',
     'Model',
     'Loss',
     'Optim',
 ]
-
-
-cfg = {
-    'train_batch_size': 64,
-    'valid_batch_size': 1000,
-    'learning_rate': 1e-2,
-    'model': {},
-    'loss': {},
-    'optim': {},
-}
 
 
 class Transform(Compose):

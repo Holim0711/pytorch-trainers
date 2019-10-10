@@ -6,12 +6,12 @@ from .utils import Optimizer, iterate, mgda_frank_wolfe_solver
 class MgdaUbPhaser(BasePhaser):
 
     def __init__(self, model_enc, model_dec,
-                 loss, optim_enc, optim_dec, device=None):
+                 loss, optim_enc, optim_dec, device=None, verbose=True):
 
         model = torch.nn.Sequential(model_enc, model_dec)
         optim = Optimizer(optim_enc, optim_dec)
 
-        super().__init__(model, loss, optim, device)
+        super().__init__(model, loss, optim, device, verbose)
         self.model_enc = model_enc
         self.model_dec = model_dec
 

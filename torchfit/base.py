@@ -5,7 +5,7 @@ from .utils import Optimizer, iterate
 
 class BasePhaser():
 
-    def __init__(self, model, loss, optim, device):
+    def __init__(self, model, loss, optim, device=None, verbose=True):
         if not isinstance(optim, Optimizer):
             optim = Optimizer(optim)
         if not isinstance(device, torch.device):
@@ -15,6 +15,7 @@ class BasePhaser():
         self.loss = loss
         self.optim = optim
         self.device = device
+        self.verbose = verbose
 
         if device is not None:
             self.model.to(device)
@@ -32,7 +33,7 @@ class BasePhaser():
 
     def train(self, dataloader):
         self.model.train()
-        for x, y in iterate(dataloader, self.device):
+        for x, y in iterate(dataloader, self.device, self.verbose):
             ŷ = self.model(x)
             l = self.loss(ŷ, y)
             l.backward()
@@ -44,7 +45,7 @@ class BasePhaser():
     @torch.no_grad()
     def valid(self, dataloader):
         self.model.eval()
-        for x, y in iterate(dataloader, self.device):
+        for x, y in iterate(dataloader, self.device, self.verbose):
             ŷ = self.model(x)
             l = self.loss(ŷ, y)
             self.callback['valid'](input=x, true=y, pred=ŷ, loss=l)
