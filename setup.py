@@ -9,6 +9,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'torch',
+        'tqdm',
     ],
     author="Holim Lim",
     author_email="ihl7029@europa.snu.ac.kr",
