@@ -29,19 +29,19 @@ class BasePhaser():
         self.optimizer.step()
         self.optimizer.zero_grad()
 
-        self.callback_params['input'] = x.cpu().detach().numpy()
-        self.callback_params['pred'] = ŷ.cpu().detach().numpy()
-        self.callback_params['true'] = y.cpu().detach().numpy()
-        self.callback_params['loss'] = l.cpu().detach().numpy()
+        self.callback_params['input'] = x
+        self.callback_params['pred'] = ŷ
+        self.callback_params['true'] = y
+        self.callback_params['loss'] = l
 
     def _valid(self, x, y):
         ŷ = self.model(x)
         l = self.criterion(ŷ, y)
 
-        self.callback_params['input'] = x.cpu().detach().numpy()
-        self.callback_params['pred'] = ŷ.cpu().detach().numpy()
-        self.callback_params['true'] = y.cpu().detach().numpy()
-        self.callback_params['loss'] = l.cpu().detach().numpy()
+        self.callback_params['input'] = x
+        self.callback_params['pred'] = ŷ
+        self.callback_params['true'] = y
+        self.callback_params['loss'] = l
 
     def train(self, dataloader):
         self.model.train()
