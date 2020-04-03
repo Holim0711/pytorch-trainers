@@ -1,5 +1,4 @@
 from .base import BasePhaser
-from .utils import iterate
 
 
 class MultiBatchPhaser(BasePhaser):

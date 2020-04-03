@@ -1,51 +1,71 @@
 import torch
-from collections import defaultdict
-from .utils import Optimizer, iterate
+from tqdm import tqdm
 
 
 class BasePhaser():
 
-    def __init__(self, model, loss, optim, device=None, verbose=True):
-        if not isinstance(optim, Optimizer):
-            optim = Optimizer(optim)
-        if not isinstance(device, torch.device):
-            device = torch.device(device)
-
+    def __init__(self, model, criterion, optimizer):
         self.model = model
-        self.loss = loss
-        self.optim = optim
-        self.device = device
-        self.verbose = verbose
+        self.criterion = criterion
+        self.optimizer = optimizer
 
-        if device is not None:
-            self.model.to(device)
-            self.loss.to(device)
-            self.optim.reload_state_dict()
+        self.callback_train = None
+        self.callback_valid = None
+        self.callback_params = None
 
-        self.callback = defaultdict(lambda **x: None)
+    def after_train(self, func):
+        self.callback_train = func
+        return func
 
-    def after(self, phase):
-        if phase not in {'train', 'valid'}:
-            raise ValueError(f"invalid phase: {phase}")
-        def register(func):
-            self.callback[phase] = func
-        return register
+    def after_valid(self, func):
+        self.callback_valid = func
+        return func
+
+    def _train(self, x, y):
+        ŷ = self.model(x)
+        l = self.criterion(ŷ, y)
+        l.backward()
+
+        self.optimizer.step()
+        self.optimizer.zero_grad()
+
+        self.callback_params['input'] = x.cpu().detach().numpy()
+        self.callback_params['pred'] = ŷ.cpu().detach().numpy()
+        self.callback_params['true'] = y.cpu().detach().numpy()
+        self.callback_params['loss'] = l.cpu().detach().numpy()
+
+    def _valid(self, x, y):
+        ŷ = self.model(x)
+        l = self.criterion(ŷ, y)
+
+        self.callback_params['input'] = x.cpu().detach().numpy()
+        self.callback_params['pred'] = ŷ.cpu().detach().numpy()
+        self.callback_params['true'] = y.cpu().detach().numpy()
+        self.callback_params['loss'] = l.cpu().detach().numpy()
 
     def train(self, dataloader):
         self.model.train()
-        for x, y in iterate(dataloader, self.device, self.verbose):
-            ŷ = self.model(x)
-            l = self.loss(ŷ, y)
-            l.backward()
 
-            self.optim.step()
-            self.optim.zero_grad()
-            self.callback['train'](input=x, true=y, pred=ŷ, loss=l)
+        self.callback_params = {}
+
+        for x, y in tqdm(dataloader):
+            self._train(x, y)
+
+            if self.callback_train:
+                self.callback_train(**self.callback_params)
+
+            self.callback_params.clear()
 
     @torch.no_grad()
     def valid(self, dataloader):
         self.model.eval()
-        for x, y in iterate(dataloader, self.device, self.verbose):
-            ŷ = self.model(x)
-            l = self.loss(ŷ, y)
-            self.callback['valid'](input=x, true=y, pred=ŷ, loss=l)
+
+        self.callback_params = {}
+
+        for x, y in tqdm(dataloader):
+            self._valid(x, y)
+
+            if self.callback_valid:
+                self.callback_valid(**self.callback_params)
+
+            self.callback_params.clear()

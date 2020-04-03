@@ -1,6 +1,6 @@
 import torch
 from .base import BasePhaser
-from .utils import Optimizer, iterate, mgda_frank_wolfe_solver
+from .utils import mgda_frank_wolfe_solver
 
 
 class MgdaUbPhaser(BasePhaser):
