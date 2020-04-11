@@ -9,7 +9,7 @@ def _min_norm(vv, vṽ, ṽṽ):
     return ((ṽṽ - vṽ) / (vv + ṽṽ - 2 * vṽ)).item()
 
 
-def mgda_frank_wolfe_solver(V, max_iter=250, stop_crit=1e-5):
+def frank_wolfe_solver(V, max_iter=250, stop_crit=1e-5):
     """ Frank-Wolfe solver for MGDA
 
     Goal: find the smallest among convex combinations of T vectors.
@@ -43,8 +43,8 @@ def mgda_frank_wolfe_solver(V, max_iter=250, stop_crit=1e-5):
     M = V.matmul(V.t()).cpu()
 
     if T == 2:
-        𝛾 = _min_norm(M[0, 0], M[0, 1], M[1, 1])
-        return torch.tensor([𝛾, 1 - 𝛾])
+        r = _min_norm(M[0, 0], M[0, 1], M[1, 1])
+        return torch.tensor([r, 1 - r])
 
     α = torch.ones(T) / T
 
@@ -55,14 +55,15 @@ def mgda_frank_wolfe_solver(V, max_iter=250, stop_crit=1e-5):
         vv = α.dot(Mα)
         vṽ = α.dot(M[i])
         ṽṽ = M[i, i]
-        𝛾 = _min_norm(vv, vṽ, ṽṽ)
+        r = _min_norm(vv, vṽ, ṽṽ)
 
-        ᾱ = 𝛾 * α
-        ᾱ[i] += 1 - 𝛾
+        ᾱ = r * α
+        ᾱ[i] += 1 - r
 
         Δα = ᾱ - α
         α = ᾱ
 
         if Δα.abs().sum() < stop_crit:
             break
+
     return α
