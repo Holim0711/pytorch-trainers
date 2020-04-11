@@ -1,9 +1,9 @@
 import torch
-from ..base import BasePhaser
+from ..base import BaseTrainer
 from .fw_solver import frank_wolfe_solver
 
 
-class MGDATrainer(BasePhaser):
+class MGDATrainer(BaseTrainer):
 
     def __init__(self, encoder, decoder, criterion, optimizer):
         self.encoder = encoder
