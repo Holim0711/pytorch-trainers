@@ -1,22 +1,11 @@
 import setuptools
 
-with open("README.md") as file:
-    long_description = file.read()
-
 setuptools.setup(
     name="trainərs",
     version="0.0.1",
     packages=setuptools.find_packages(),
-    install_requires=[
-        'torch',
-        'tqdm',
-    ],
     author="Holim Lim",
     author_email="ihl7029@europa.snu.ac.kr",
-    description="torch boilerplate",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/Holim0711/pytorch-trainers",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

@@ -1,71 +1,49 @@
 import torch
-from tqdm import tqdm
 
 
-class BasePhaser():
+class BaseTrainer():
 
     def __init__(self, model, criterion, optimizer):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
 
-        self.callback_train = None
-        self.callback_valid = None
-        self.callback_params = None
+        self.train_callback = None
+        self.valid_callback = None
 
     def after_train(self, func):
-        self.callback_train = func
+        self.train_callback = func
         return func
 
     def after_valid(self, func):
-        self.callback_valid = func
+        self.valid_callback = func
         return func
 
-    def _train(self, x, y):
+    def _train(self, i, x, y):
         ŷ = self.model(x)
-        l = self.criterion(ŷ, y)
-        l.backward()
+        ℓ = self.criterion(ŷ, y)
 
-        self.optimizer.step()
         self.optimizer.zero_grad()
+        ℓ.backward()
+        self.optimizer.step()
 
-        self.callback_params['input'] = x
-        self.callback_params['pred'] = ŷ
-        self.callback_params['true'] = y
-        self.callback_params['loss'] = l
+        if self.train_callback is not None:
+            self.train_callback(i=i, input=x, output=ŷ, target=y, loss=ℓ)
 
-    def _valid(self, x, y):
+    def _valid(self, i, x, y):
         ŷ = self.model(x)
-        l = self.criterion(ŷ, y)
+        ℓ = self.criterion(ŷ, y)
 
-        self.callback_params['input'] = x
-        self.callback_params['pred'] = ŷ
-        self.callback_params['true'] = y
-        self.callback_params['loss'] = l
+        if self.valid_callback is not None:
+            self.valid_callback(i=i, input=x, output=ŷ, target=y, loss=ℓ)
 
     def train(self, dataloader):
         self.model.train()
-
-        self.callback_params = {}
-
-        for x, y in tqdm(dataloader):
-            self._train(x, y)
-
-            if self.callback_train:
-                self.callback_train(**self.callback_params)
-
-            self.callback_params.clear()
+        for i, (x, y) in enumerate(dataloader):
+            self._train(i, x, y)
 
     @torch.no_grad()
     def valid(self, dataloader):
         self.model.eval()
-
-        self.callback_params = {}
-
-        for x, y in tqdm(dataloader):
-            self._valid(x, y)
-
-            if self.callback_valid:
-                self.callback_valid(**self.callback_params)
-
-            self.callback_params.clear()
+        for i, (x, y) in enumerate(dataloader):
+            self._valid(i, x, y)
