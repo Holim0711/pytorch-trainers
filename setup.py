@@ -4,7 +4,7 @@ with open("README.md") as file:
     long_description = file.read()
 
 setuptools.setup(
-    name="torchfit",
+    name="trainər",
     version="0.0.1",
     packages=setuptools.find_packages(),
     install_requires=[
@@ -16,7 +16,7 @@ setuptools.setup(
     description="torch boilerplate",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Holim0711/torchfit",
+    url="https://github.com/Holim0711/pytorch-trainer",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
