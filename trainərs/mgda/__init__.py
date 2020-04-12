@@ -1,1 +1,1 @@
-from mgda import MGDATrainer
+from .mgda import MGDATrainer
