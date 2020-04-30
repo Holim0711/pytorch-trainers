@@ -4,8 +4,8 @@ from collections import defaultdict
 
 class GradAccumTrainer(BaseTrainer):
 
-    def __init__(self, model, criterion, optimizer, multi_batch):
-        super().__init__(model, criterion, optimizer)
+    def __init__(self, model, criterion, optimizer, multi_batch, device=None):
+        super().__init__(model, criterion, optimizer, device=device)
         self.multi_batch = int(multi_batch)
         self.train_callback_params = defaultdict(list)
 

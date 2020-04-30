@@ -5,11 +5,12 @@ from .fw_solver import frank_wolfe_solver
 
 class MGDATrainer(BaseTrainer):
 
-    def __init__(self, encoder, decoder, criterion, optimizer):
+    def __init__(self, encoder, decoder, criterion, optimizer, device=None):
         self.encoder = encoder
         self.decoder = decoder
         self.criterion = criterion
         self.optimizer = optimizer
+        self.device = device
 
         self.train_callback = None
         self.valid_callback = None
